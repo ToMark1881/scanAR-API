@@ -6,6 +6,7 @@ public class RoutesConfigurator {
     public func registerRoutes(_ app: Application) throws {
         try registerFileUploadingRoute(app)
         try registerFileDownloadRoute(app)
+        try registerProgressRoute(app)
         try registerHealthRoute(app)
     }
     
@@ -25,6 +26,13 @@ public class RoutesConfigurator {
             let result = try await controller.processDownloadRequest(request)
             
             return result
+        }
+    }
+    
+    private func registerProgressRoute(_ app: Application) throws {
+        app.webSocket("progress") { request, socket async -> () in
+            let controller = FileUploaderController()
+            try? await controller.processProgressRequest(request, socket: socket)
         }
     }
     
