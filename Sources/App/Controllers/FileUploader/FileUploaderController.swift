@@ -9,14 +9,23 @@ import Vapor
 
 class FileUploaderController {
     
-    public func processUploadRequest(_ request: Request) async -> String {
-        return "Working!"
-    }
+    private lazy var service: PhotogrammetryService = { PhotogrammetryService() }()
     
-    public func processInitRequest(_ request: Request) async throws -> String {
-        let selectedQuality = try request.content.decode(ImageProcessingQualityModel.self)
+    public func processUploadRequest(_ request: Request) async throws -> String {
+        let model = try request.content.decode(FileUploaderInput.self)
         
-        return "You have chosen \(selectedQuality.quality.rawValue) quality"
+        if let quality = model.quality {
+            service.selectedQuality = quality
+        }
+        
+        let id = try service.initObjectCaptureSession(with: model.files)
+        
+        return id.uuidString
     }
     
+}
+
+fileprivate struct FileUploaderInput: Content {
+    var files: [File]
+    var quality: ImageProcessingQuality?
 }
