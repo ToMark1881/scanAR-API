@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  FileUploaderController.swift
 //  
 //
 //  Created by Vladyslav Vdovychenko on 20.01.2023.
@@ -9,23 +9,18 @@ import Vapor
 
 class FileUploaderController {
     
-    private lazy var service: PhotogrammetryService = { PhotogrammetryService() }()
+    private lazy var manager: PhotogrammetryManager = { .shared }()
     
     public func processUploadRequest(_ request: Request) async throws -> String {
-        let model = try request.content.decode(FileUploaderInput.self)
+        let result = try await manager.initPhotogrammetrySession(with: request)
         
-        if let quality = model.quality {
-            service.selectedQuality = quality
-        }
-        
-        let id = try service.initObjectCaptureSession(with: model.files)
-        
-        return id.uuidString
+        return result
     }
     
-}
-
-fileprivate struct FileUploaderInput: Content {
-    var files: [File]
-    var quality: ImageProcessingQuality?
+    public func processDownloadRequest(_ request: Request) async throws -> Response {
+        let result = try await manager.downloadGeneratedModel(with: request)
+        
+        return result
+    }
+    
 }

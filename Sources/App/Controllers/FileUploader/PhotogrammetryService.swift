@@ -11,11 +11,23 @@ import Vapor
 import CoreImage
 import CoreVideo
 
-class PhotogrammetryService {
+protocol PhotogrammetryService {
+    var selectedQuality: ImageProcessingQuality { get set }
+    var finalModelURL: URL? { get }
+    var currentProgress: Double? { get }
+    var storedError: Error? { get }
+    
+    func initObjectCaptureSession(with files: [File]) throws -> UUID
+}
+
+class PhotogrammetryServiceImplementation: PhotogrammetryService {
     
     // MARK: - Public variables
     
     var selectedQuality: ImageProcessingQuality = .reduced
+    var finalModelURL: URL?
+    var currentProgress: Double?
+    var storedError: Error?
     
     // MARK: - Private variables
     
@@ -39,7 +51,7 @@ class PhotogrammetryService {
     
 }
 
-private extension PhotogrammetryService {
+private extension PhotogrammetryServiceImplementation {
     
      /// Checks to make sure at least one GPU meets the minimum requirements for object reconstruction. At least one GPU must be a "high power" device, which means it has at least 4 GB of RAM, provides barycentric coordinates to the fragment shader, and is running on a Mac with Apple silicon, or on an Intel-based Mac with a discrete GPU.
     var supportsObjectReconstruction: Bool {
@@ -105,20 +117,21 @@ private extension PhotogrammetryService {
             for try await output in session.outputs {
                 switch output {
                 case .requestProgress(let request, let fraction):
+                    currentProgress = fraction
                     print("Progress: \(fraction)")
                     
                 case .requestComplete(let request, let result):
                     switch result {
                     case .modelFile(let url):
+                        finalModelURL = url
                         print("Result output at \(url)")
                         
-                    case .modelEntity(let model):
-                        print("Preview model generated")
                     default:
                         break
                     }
                     
                 case .requestError(let request, let error):
+                    storedError = error
                     print("Request \(request) get error \(error)")
                     
                 case .processingComplete:
