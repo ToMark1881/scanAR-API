@@ -68,7 +68,7 @@ class PhotogrammetryManager {
         }
     }
     
-    func downloadGeneratedModel(with request: Request) async throws -> Response {
+    func downloadGeneratedModel(with request: Request) throws -> Response {
         let model = try request.content.decode(FileDownloaderModel.self)
         
         guard let service = services[model.id] else {

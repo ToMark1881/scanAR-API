@@ -21,8 +21,8 @@ class FileUploaderController {
         try await manager.getProgress(with: request, webSocket: socket)
     }
     
-    public func processDownloadRequest(_ request: Request) async throws -> Response {
-        let result = try await manager.downloadGeneratedModel(with: request)
+    public func processDownloadRequest(_ request: Request) throws -> Response {
+        let result = try manager.downloadGeneratedModel(with: request)
         
         return result
     }

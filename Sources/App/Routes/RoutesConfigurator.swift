@@ -23,7 +23,7 @@ public class RoutesConfigurator {
     private func registerFileDownloadRoute(_ app: Application) throws {
         app.on(.GET, "download-model") { request -> Response in
             let controller = FileUploaderController()
-            let result = try await controller.processDownloadRequest(request)
+            let result = try controller.processDownloadRequest(request)
             
             return result
         }
