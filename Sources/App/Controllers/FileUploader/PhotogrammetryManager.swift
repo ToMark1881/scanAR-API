@@ -69,7 +69,11 @@ class PhotogrammetryManager {
     }
     
     func downloadGeneratedModel(with request: Request) throws -> Response {
-        let model = try request.content.decode(FileDownloaderModel.self)
+        guard let buffer = request.body.data else {
+            throw Abort(.internalServerError)
+        }
+        
+        let model = try JSONDecoder().decode(FileDownloaderModel.self, from: Data(buffer: buffer))
         
         guard let service = services[model.id] else {
             throw Abort(.internalServerError)
