@@ -40,7 +40,9 @@ class PhotogrammetryServiceImplementation: PhotogrammetryService {
             throw Abort(.badRequest)
         }
         
-        let id = try initialiseDirectory(for: files)
+        let id = UUID()
+        try initialiseDirectory(for: files, and: id)
+        print("Request id: \(id)")
         
         Task {
             try await startSession(with: id)
@@ -82,6 +84,7 @@ private extension PhotogrammetryServiceImplementation {
             throw Abort(.badRequest)
         }
         
+        print("Session with id \(id) started!")
         let outputURL = inputFolderURL.appendingPathComponent("\(id.uuidString).usdz")
         let session = try PhotogrammetrySession(input: inputFolderURL)
         let request = PhotogrammetrySession.Request.modelFile(url: outputURL,
@@ -92,8 +95,7 @@ private extension PhotogrammetryServiceImplementation {
         try performSessionOutputs(session)
     }
     
-    func initialiseDirectory(for files: [File]) throws -> UUID {
-        let id = UUID()
+    func initialiseDirectory(for files: [File], and id: UUID) throws {
         let inputFolderUrl = URL(fileURLWithPath: NSTemporaryDirectory(),
                                  isDirectory: true).appendingPathComponent(id.uuidString,
                                                                            isDirectory: true)
@@ -108,8 +110,6 @@ private extension PhotogrammetryServiceImplementation {
         }
         
         inputFolderURL = inputFolderUrl
-        
-        return id
     }
     
     func performSessionOutputs(_ session: PhotogrammetrySession) throws {

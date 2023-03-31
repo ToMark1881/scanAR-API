@@ -16,6 +16,8 @@ class PhotogrammetryManager {
     private init() {  }
     
     func initPhotogrammetrySession(with request: Request) async throws -> String {
+        // print("Session from request \(request). Started.")
+        
         let model = try request.content.decode(FileUploaderModel.self)
         let service = PhotogrammetryServiceImplementation()
         
@@ -69,13 +71,11 @@ class PhotogrammetryManager {
     }
     
     func downloadGeneratedModel(with request: Request) throws -> Response {
-        guard let buffer = request.body.data else {
-            throw Abort(.internalServerError)
+        guard let id = request.query[String.self, at: "id"] else {
+            throw Abort(.badRequest)
         }
-        
-        let model = try JSONDecoder().decode(FileDownloaderModel.self, from: Data(buffer: buffer))
-        
-        guard let service = services[model.id] else {
+                
+        guard let service = services[id] else {
             throw Abort(.internalServerError)
         }
         
